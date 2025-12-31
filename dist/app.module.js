@@ -12,21 +12,32 @@ const typeorm_1 = require("@nestjs/typeorm");
 const notes_module_1 = require("./notes/notes.module");
 const users_module_1 = require("./users/users.module");
 const auth_module_1 = require("./auth/auth.module");
+const config_1 = require("@nestjs/config");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forRoot({
-                type: 'mysql',
-                host: 'localhost',
-                port: 3306,
-                username: 'root',
-                password: 'Admin@1234',
-                database: 'notes_db',
-                autoLoadEntities: true,
-                synchronize: true,
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+            }),
+            typeorm_1.TypeOrmModule.forRootAsync({
+                inject: [config_1.ConfigService],
+                useFactory: (config) => {
+                    console.log('DB_HOST:', config.get('DB_HOST'));
+                    console.log('DB_PORT:', config.get('DB_PORT'));
+                    return {
+                        type: 'mysql',
+                        host: config.get('DB_HOST'),
+                        port: Number(config.get('DB_PORT')),
+                        username: config.get('DB_USERNAME'),
+                        password: config.get('DB_PASSWORD'),
+                        database: config.get('DB_NAME'),
+                        autoLoadEntities: true,
+                        synchronize: true,
+                    };
+                },
             }),
             auth_module_1.AuthModule,
             notes_module_1.NotesModule,
